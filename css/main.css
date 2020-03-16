@@ -1,0 +1,13 @@
+body {
+  font-family: sans-serif;
+}
+
+video {
+  max-width: 100%;
+  width: 320px;
+}
+
+iframe {
+  height: 600px;
+  width: 100%;
+}
