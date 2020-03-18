@@ -6,13 +6,14 @@
     "start": "node index.js"
   },
   "repository": {
-  "type": "git",
-  "url": "git://github.com/Sefaria/dafChat.git"
+    "type": "git",
+    "url": "git://github.com/Sefaria/dafChat.git"
   },
   "dependencies": {
     "node-static": "^0.7.10",
+    "os": "0.1.1",
     "socket.io": "^2.0.0",
-    "os": "0.1.1"
+    "sqlite3": "^4.1.1"
   },
   "license": "GPL-3.0"
 }

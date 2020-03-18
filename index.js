@@ -1,6 +1,12 @@
 'use strict';
 
+const sqlite3 = require('sqlite3').verbose();
+const db = new sqlite3.Database('./db/chatrooms.db');
+
+db.run(`DELETE FROM chatrooms WHERE 1==1`)
+
 var os = require('os');
+
 var nodeStatic = require('node-static');
 var http = require('http');
 var socketIO = require('socket.io');
@@ -29,6 +35,14 @@ io.sockets.on('connection', function(socket) {
 
   socket.on('create or join', function(room) {
     log('Received request to create or join room ' + room);
+
+    db.run(`INSERT INTO chatrooms(name) VALUES(?)`, [room], function(err) {
+      if (err) {
+        log(err.message);
+      }
+      // get the last insert id
+      log(`A row has been inserted with rowid ${this.lastID}`);
+    });
 
     var clientsInRoom = io.sockets.adapter.rooms[room];
     var numClients = clientsInRoom ? Object.keys(clientsInRoom.sockets).length : 0;

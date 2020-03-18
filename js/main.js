@@ -1,15 +1,16 @@
 'use strict';
 
 const TURN_SERVER = 'turn:192.168.86.158:3478?transport=udp';
-var isChannelReady = false;
-var isInitiator = false;
-var isStarted = false;
-var localStream;
-var pc;
-var remoteStream;
-var turnReady;
 
-var pcConfig = {
+let isChannelReady = false;
+let isInitiator = false;
+let isStarted = false;
+let localStream;
+let pc;
+let remoteStream;
+let turnReady;
+
+const pcConfig = {
   'iceServers': [{
     'urls': 'stun:stun.l.google.com:19302'
   },
@@ -21,18 +22,22 @@ var pcConfig = {
 };
 
 // Set up audio and video regardless of what devices are present.
-var sdpConstraints = {
+const sdpConstraints = {
   offerToReceiveAudio: true,
   offerToReceiveVideo: true
 };
 
 /////////////////////////////////////////////
+let rooms = []
 
-var room = 'foo';
-// Could prompt for room name:
-// room = prompt('Enter room name:');
+rooms.push(Math.random().toString(36).substring(7));
+console.log(rooms);
 
-var socket = io.connect();
+
+const socket = io.connect();
+
+const room = rooms[Math.floor(Math.random() * rooms.length)]
+
 
 if (room !== '') {
   socket.emit('create or join', room);
@@ -84,7 +89,7 @@ socket.on('message', function(message) {
   } else if (message.type === 'answer' && isStarted) {
     pc.setRemoteDescription(new RTCSessionDescription(message));
   } else if (message.type === 'candidate' && isStarted) {
-    var candidate = new RTCIceCandidate({
+    const candidate = new RTCIceCandidate({
       sdpMLineIndex: message.label,
       candidate: message.candidate
     });
@@ -96,8 +101,8 @@ socket.on('message', function(message) {
 
 ////////////////////////////////////////////////////
 
-var localVideo = document.querySelector('#localVideo');
-var remoteVideo = document.querySelector('#remoteVideo');
+const localVideo = document.querySelector('#localVideo');
+const remoteVideo = document.querySelector('#remoteVideo');
 
 navigator.mediaDevices.getUserMedia({
   audio: true,
@@ -109,7 +114,7 @@ navigator.mediaDevices.getUserMedia({
 });
 
 function addSefariaEmbed(){
-  var iframe = document.createElement('iframe');
+  const iframe = document.createElement('iframe');
   iframe.src = "https://www.sefaria.org/todays-daf-yomi";
   document.body.appendChild(iframe);
 
@@ -124,12 +129,6 @@ function gotStream(stream) {
     maybeStart();
   }
 }
-
-var constraints = {
-  video: true
-};
-
-console.log('Getting user media with constraints', constraints);
 
 function maybeStart() {
   console.log('>>>>>>> maybeStart() ', isStarted, localStream, isChannelReady);
@@ -212,8 +211,8 @@ function onCreateSessionDescriptionError(error) {
 }
 
 function requestTurn(turnURL) {
-  var turnExists = false;
-  for (var i in pcConfig.iceServers) {
+  let turnExists = false;
+  for (let i in pcConfig.iceServers) {
     if (pcConfig.iceServers[i].urls.substr(0, 5) === 'turn:') {
       turnExists = true;
       turnReady = true;
@@ -223,10 +222,10 @@ function requestTurn(turnURL) {
   if (!turnExists) {
     console.log('Getting TURN server from ', turnURL);
     // No TURN server. Get one from computeengineondemand.appspot.com:
-    var xhr = new XMLHttpRequest();
+    let xhr = new XMLHttpRequest();
     xhr.onreadystatechange = function() {
       if (xhr.readyState === 4 && xhr.status === 200) {
-        var turnServer = JSON.parse(xhr.responseText);
+        const turnServer = JSON.parse(xhr.responseText);
         console.log('Got TURN server: ', turnServer);
         pcConfig.iceServers.push({
           'urls': 'turn:' + turnServer.username + '@' + turnServer.turn,
