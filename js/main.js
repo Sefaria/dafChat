@@ -37,7 +37,7 @@ console.log(rooms);
 const socket = io.connect();
 
 const room = rooms[Math.floor(Math.random() * rooms.length)]
-
+// const room = 'foo';
 
 if (room !== '') {
   socket.emit('create or join', room);
@@ -145,7 +145,7 @@ function maybeStart() {
 }
 
 window.onbeforeunload = function() {
-  sendMessage('bye');
+  socket.emit('bye', room);
 };
 
 /////////////////////////////////////////////////////////

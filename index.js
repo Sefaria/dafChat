@@ -1,10 +1,10 @@
 'use strict';
 
+
 const sqlite3 = require('sqlite3').verbose();
 const db = new sqlite3.Database('./db/chatrooms.db');
-
 db.run(`DELETE FROM chatrooms WHERE 1==1`)
-
+console.log('creating and clearing db');
 var os = require('os');
 
 var nodeStatic = require('node-static');
@@ -27,6 +27,12 @@ io.sockets.on('connection', function(socket) {
     socket.emit('log', array);
   }
 
+
+  function getUsersInRoom(room) {
+    var clientsInRoom = io.sockets.adapter.rooms[room];
+    return clientsInRoom ? Object.keys(clientsInRoom.sockets).length : 0;
+  }
+
   socket.on('message', function(message) {
     log('Client said: ', message);
     // for a real app, would be room-only (not broadcast)
@@ -40,13 +46,11 @@ io.sockets.on('connection', function(socket) {
       if (err) {
         log(err.message);
       }
-      // get the last insert id
-      log(`A row has been inserted with rowid ${this.lastID}`);
     });
 
-    var clientsInRoom = io.sockets.adapter.rooms[room];
-    var numClients = clientsInRoom ? Object.keys(clientsInRoom.sockets).length : 0;
+    var numClients = getUsersInRoom(room);
     log('Room ' + room + ' now has ' + numClients + ' client(s)');
+    console.log(`Room: ${room} now has ${numClients} client(s)`);
 
     if (numClients === 0) {
       socket.join(room);
@@ -75,8 +79,12 @@ io.sockets.on('connection', function(socket) {
     }
   });
 
-  socket.on('bye', function(){
-    console.log('received bye');
+  socket.on('bye', function(room){
+    if (getUsersInRoom(room) == 1) {
+      console.log(`Room: ${room} is empty`);
+      db.run(`DELETE FROM chatrooms WHERE name=?`, room)
+    }
+
   });
 
 });
