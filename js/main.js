@@ -12,13 +12,14 @@ let turnReady;
 
 const pcConfig = {
   'iceServers': [{
-    'urls': 'stun:stun.l.google.com:19302'
-  },
-  {
-    'urls': TURN_SERVER,
-    'credential': 'test',
-    'username': 'test'
-  }]
+      'urls': 'stun:stun.l.google.com:19302'
+    },
+    {
+      'urls': TURN_SERVER,
+      'credential': 'test',
+      'username': 'test'
+    }
+  ]
 };
 
 // Set up audio and video regardless of what devices are present.
@@ -28,32 +29,25 @@ const sdpConstraints = {
 };
 
 /////////////////////////////////////////////
-let rooms = []
 
-rooms.push(Math.random().toString(36).substring(7));
-console.log(rooms);
-
+var clientRoom;
 
 const socket = io.connect();
 
-const room = rooms[Math.floor(Math.random() * rooms.length)]
-// const room = 'foo';
-
-if (room !== '') {
-  socket.emit('create or join', room);
-  console.log('Attempted to create or  join room', room);
-}
+socket.emit('create or join');
+console.log('Attempted to create or join room');
 
 socket.on('created', function(room) {
   console.log('Created room ' + room);
   isInitiator = true;
+  clientRoom = room;
 });
 
 socket.on('full', function(room) {
   console.log('Room ' + room + ' is full');
 });
 
-socket.on('join', function (room){
+socket.on('join', function(room) {
   console.log('Another peer made a request to join room ' + room);
   console.log('This peer is the initiator of room ' + room + '!');
   isChannelReady = true;
@@ -62,6 +56,7 @@ socket.on('join', function (room){
 socket.on('joined', function(room) {
   console.log('joined: ' + room);
   isChannelReady = true;
+  clientRoom = room;
 });
 
 socket.on('log', function(array) {
@@ -105,15 +100,20 @@ const localVideo = document.querySelector('#localVideo');
 const remoteVideo = document.querySelector('#remoteVideo');
 
 navigator.mediaDevices.getUserMedia({
-  audio: true,
-  video: true
-})
-.then(gotStream)
-.catch(function(e) {
-  alert('getUserMedia() error: ' + e.name);
-});
+    audio: true,
+    video: true
+  })
+  .then(gotStream)
+  .catch(function(e) {
+    alert('getUserMedia() error: ' + e.name);
+  });
 
-function addSefariaEmbed(){
+function addAdditionalHTML() {
+  const newRoomButton = document.createElement('div');
+  var span = document.createElement('span');
+  newRoomButton.innerHTML = '<button id="newRoom" onclick="newRoom()">New Chevruta</button>';
+  document.body.appendChild(newRoomButton);
+
   const iframe = document.createElement('iframe');
   iframe.src = "https://www.sefaria.org/todays-daf-yomi";
   document.body.appendChild(iframe);
@@ -145,8 +145,9 @@ function maybeStart() {
 }
 
 window.onbeforeunload = function() {
-  socket.emit('bye', room);
+  socket.emit('bye', clientRoom);
 };
+
 
 /////////////////////////////////////////////////////////
 
@@ -161,7 +162,7 @@ function createPeerConnection() {
     pc.onaddstream = handleRemoteStreamAdded;
     pc.onremovestream = handleRemoteStreamRemoved;
     console.log('Created RTCPeerConnnection');
-    addSefariaEmbed();
+    addAdditionalHTML();
   } catch (e) {
     console.log('Failed to create PeerConnection, exception: ' + e.message);
     alert('Cannot create RTCPeerConnection object.');
@@ -252,17 +253,23 @@ function handleRemoteStreamRemoved(event) {
 function hangup() {
   console.log('Hanging up.');
   stop();
-  sendMessage('bye');
+  socket.emit('bye', clientRoom);
 }
 
 function handleRemoteHangup() {
+  socket.emit('bye', clientRoom);
   console.log('Session terminated.');
-  stop();
-  isInitiator = false;
+  newRoom();
 }
 
 function stop() {
   isStarted = false;
   pc.close();
   pc = null;
+}
+
+function newRoom() {
+  hangup()
+  socket.emit('new room');
+  console.log('Attempted to create new room');
 }

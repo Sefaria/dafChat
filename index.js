@@ -1,6 +1,7 @@
 'use strict';
 
 
+var socketIO = require('socket.io');
 const sqlite3 = require('sqlite3').verbose();
 const db = new sqlite3.Database('./db/chatrooms.db');
 db.run(`DELETE FROM chatrooms WHERE 1==1`)
@@ -9,7 +10,6 @@ var os = require('os');
 
 var nodeStatic = require('node-static');
 var http = require('http');
-var socketIO = require('socket.io');
 
 var PORT = process.env.PORT || 8080;
 var fileServer = new(nodeStatic.Server)();
@@ -35,37 +35,72 @@ io.sockets.on('connection', function(socket) {
 
   socket.on('message', function(message) {
     log('Client said: ', message);
-    // for a real app, would be room-only (not broadcast)
-    socket.broadcast.emit('message', message);
+    var roomId = (Object.keys(socket.rooms).filter(item => item!=socket.id))[0]
+    socket.to(roomId).emit('message', message);
   });
 
-  socket.on('create or join', function(room) {
-    log('Received request to create or join room ' + room);
-
-    db.run(`INSERT INTO chatrooms(name) VALUES(?)`, [room], function(err) {
+  function createNewRoom() {
+    var room = Math.random().toString(36).substring(7);
+    socket.join(room);
+    console.log(`${socket.id} created room ${room}`)
+    log('Client ID ' + socket.id + ' created room ' + room);
+    socket.emit('created', room, socket.id);
+    db.run(`INSERT INTO chatrooms(name, clients) VALUES(?, ?)`, [room, 1], function(err) {
       if (err) {
         log(err.message);
       }
     });
+  }
 
-    var numClients = getUsersInRoom(room);
-    log('Room ' + room + ' now has ' + numClients + ' client(s)');
-    console.log(`Room: ${room} now has ${numClients} client(s)`);
+  socket.on('new room', function() {
+    console.log(`${socket.id} searching for a room`)
+    createNewRoom();
+  });
 
-    if (numClients === 0) {
-      socket.join(room);
-      log('Client ID ' + socket.id + ' created room ' + room);
-      socket.emit('created', room, socket.id);
+  socket.on('create or join', function() {
 
-    } else if (numClients === 1) {
-      log('Client ID ' + socket.id + ' joined room ' + room);
-      io.sockets.in(room).emit('join', room);
-      socket.join(room);
-      socket.emit('joined', room, socket.id);
-      io.sockets.in(room).emit('ready');
-    } else { // max two clients
-      socket.emit('full', room);
-    }
+    console.log(`${socket.id} searching for a room`)
+    // log('Received request to create or join room ' + room);
+      db.get(`SELECT name name, clients, clients from chatrooms WHERE clients = ?`, [1], (err, row) => {
+        if (err) {
+          return console.error(err.message);
+        }
+        if (row) {
+          var room = row.name;
+          // var numClients = getUsersInRoom(room);
+          // log('Room ' + room + ' now has ' + numClients + ' client(s)');
+          // console.log(`Room: ${room} now has ${numClients} client(s)`);
+          log('Client ID ' + socket.id + ' joined room ' + room);
+          console.log('Client ID ' + socket.id + ' joined room ' + room);
+
+          io.sockets.in(room).emit('join', room);
+          socket.join(room);
+          socket.emit('joined', room, socket.id);
+          io.sockets.in(room).emit('ready');
+          db.run(`UPDATE chatrooms SET clients=? WHERE name=?`, [row.clients+1, room])
+        }
+        else {
+          createNewRoom();
+        }
+      });
+
+
+    //
+    //
+    // if (numClients === 0) {
+    //   socket.join(room);
+    //   log('Client ID ' + socket.id + ' created room ' + room);
+    //   socket.emit('created', room, socket.id);
+    //
+    // } else if (numClients === 1) {
+    //   log('Client ID ' + socket.id + ' joined room ' + room);
+    //   io.sockets.in(room).emit('join', room);
+    //   socket.join(room);
+    //   socket.emit('joined', room, socket.id);
+    //   io.sockets.in(room).emit('ready');
+    // } else { // max two clients
+    //   socket.emit('full', room);
+    // }
   });
 
   socket.on('ipaddr', function() {
@@ -80,11 +115,10 @@ io.sockets.on('connection', function(socket) {
   });
 
   socket.on('bye', function(room){
-    if (getUsersInRoom(room) == 1) {
-      console.log(`Room: ${room} is empty`);
-      db.run(`DELETE FROM chatrooms WHERE name=?`, room)
-    }
-
-  });
+    console.log(`bye received from ${socket.id} for room ${room}`)
+    db.run(`DELETE FROM chatrooms WHERE name=?`, room);
+    socket.leave(room);
+    socket.to(room).emit('message', 'bye');
+  })
 
 });
