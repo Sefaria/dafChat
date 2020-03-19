@@ -250,9 +250,17 @@ function handleRemoteStreamRemoved(event) {
   console.log('Remote stream removed. Event: ', event);
 }
 
+
 function hangup() {
   console.log('Hanging up.');
   stop();
+
+  remoteVideo.srcObject = null;
+  const newRoomButton = document.querySelector('#newRoom');
+  newRoomButton.parentNode.removeChild(newRoomButton);
+  const iframe = document.querySelector('iframe');
+  iframe.parentNode.removeChild(iframe);
+
   socket.emit('bye', clientRoom);
 }
 
