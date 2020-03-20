@@ -1,6 +1,5 @@
 'use strict';
 
-
 var socketIO = require('socket.io');
 const sqlite3 = require('sqlite3').verbose();
 const db = new sqlite3.Database('./db/chatrooms.db');
@@ -45,7 +44,7 @@ io.sockets.on('connection', function(socket) {
     console.log(`${socket.id} created room ${room}`)
     log('Client ID ' + socket.id + ' created room ' + room);
     socket.emit('created', room, socket.id);
-    db.run(`INSERT INTO chatrooms(name, clients) VALUES(?, ?)`, [room, 1], function(err) {
+    db.run(`INSERT INTO chatrooms(name, clients, roomStarted) VALUES(?, ?, ?)`, [room, 1, +new Date], function(err) {
       if (err) {
         log(err.message);
       }
@@ -61,15 +60,13 @@ io.sockets.on('connection', function(socket) {
 
     console.log(`${socket.id} searching for a room`)
     // log('Received request to create or join room ' + room);
-      db.get(`SELECT name name, clients, clients from chatrooms WHERE clients = ?`, [1], (err, row) => {
+      db.all(`SELECT name name, clients, clients from chatrooms WHERE clients = ? ORDER BY roomStarted`, [1], (err, rows) => {
         if (err) {
           return console.error(err.message);
         }
-        if (row) {
+        if (rows.length >= 2)  {
+          var row = rows[0];
           var room = row.name;
-          // var numClients = getUsersInRoom(room);
-          // log('Room ' + room + ' now has ' + numClients + ' client(s)');
-          // console.log(`Room: ${room} now has ${numClients} client(s)`);
           log('Client ID ' + socket.id + ' joined room ' + room);
           console.log('Client ID ' + socket.id + ' joined room ' + room);
 

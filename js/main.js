@@ -111,7 +111,7 @@ navigator.mediaDevices.getUserMedia({
 function addAdditionalHTML() {
   const newRoomButton = document.createElement('div');
   var span = document.createElement('span');
-  newRoomButton.innerHTML = '<button id="newRoom" onclick="newRoom()">New Chevruta</button>';
+  newRoomButton.innerHTML = '<button id="newRoom" onclick="location.reload();">New Chevruta</button>';
   document.body.appendChild(newRoomButton);
 
   const iframe = document.createElement('iframe');
@@ -267,7 +267,8 @@ function hangup() {
 function handleRemoteHangup() {
   socket.emit('bye', clientRoom);
   console.log('Session terminated.');
-  newRoom();
+  location.reload()
+  // newRoom();
 }
 
 function stop() {
@@ -278,6 +279,7 @@ function stop() {
 
 function newRoom() {
   hangup()
-  socket.emit('new room');
+  // socket.emit('new room');
+  socket.emit('create or join');
   console.log('Attempted to create new room');
 }
