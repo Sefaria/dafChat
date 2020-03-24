@@ -111,7 +111,7 @@ navigator.mediaDevices.getUserMedia({
 function addAdditionalHTML() {
   const newRoomButton = document.createElement('div');
   var span = document.createElement('span');
-  newRoomButton.innerHTML = '<button id="newRoom" onclick="location.reload();">New Chevruta</button>';
+  newRoomButton.innerHTML = '<button id="newRoom" onclick="location.reload();">New Person</button>';
   document.getElementById("buttonContainer").appendChild(newRoomButton)
 
   const iframe = document.createElement('iframe');

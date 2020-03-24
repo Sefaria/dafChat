@@ -12,7 +12,7 @@ video {
   order: 0;
   flex: 0 0 auto;
   align-self: auto;
-  border: red 1px solid;
+  border: 0;
 
 }
 
