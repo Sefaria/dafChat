@@ -8,15 +8,30 @@
   </head>
 
   <body>
+    <div id="container">
+      <div id="videos">
+        <video id="localVideo" class="flippedVideo" autoplay muted></video>
+        <video id="remoteVideo" autoplay poster="/img/loading.png"></video>
+        <div id="buttonContainer"></div>
+        <p>
+          DafRoulette is an experimental project from Sefaria to match you with random partners for studying daf yomi.
+        </p>
+        <p>
+          There are currently <#NUMBER> chevrutas studying.
+        </p>
 
-    <div id="videos">
-      <video id="localVideo" class="flippedVideo" autoplay muted></video>
-      <video id="remoteVideo" autoplay poster="/img/loading.png"></video>
+        <p>
+          Questions? Email <a href="mailto:hello@sefaria.org">hello@sefaria.org</a>
+        </p>
+      </div>
+      <div id="iframeContainer">
+      </div>
     </div>
 
     <script src="/socket.io/socket.io.js"></script>
     <script src="https://webrtc.github.io/adapter/adapter-latest.js"></script>
     <script src="js/main.js"></script>
+    <!-- <script>addAdditionalHTML()</script> -->
 
   </body>
 </html>

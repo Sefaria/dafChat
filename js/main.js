@@ -112,12 +112,11 @@ function addAdditionalHTML() {
   const newRoomButton = document.createElement('div');
   var span = document.createElement('span');
   newRoomButton.innerHTML = '<button id="newRoom" onclick="location.reload();">New Chevruta</button>';
-  document.body.appendChild(newRoomButton);
+  document.getElementById("buttonContainer").appendChild(newRoomButton)
 
   const iframe = document.createElement('iframe');
   iframe.src = "https://www.sefaria.org/todays-daf-yomi";
-  document.body.appendChild(iframe);
-
+  document.getElementById("iframeContainer").appendChild(iframe)
 }
 
 function gotStream(stream) {

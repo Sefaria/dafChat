@@ -1,17 +1,92 @@
-body {
-  font-family: sans-serif;
+html, body {
+  height: 100%;
+  margin: 0;
+  font-family: Roboto;
+  font-style: normal;
+  font-weight: normal;
 }
 
 video {
   max-width: 100%;
-  width: 320px;
+  width: 258px;
+  order: 0;
+  flex: 0 0 auto;
+  align-self: auto;
+  border: red 1px solid;
+
 }
 
 iframe {
-  height: 600px;
   width: 100%;
+  border: 0;
+
 }
 
 .flippedVideo {
   transform: rotateY(180deg);
+}
+
+#container {
+    min-height: 100%;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+    align-content: stretch;
+    align-items: flex-start;
+    }
+
+#videos {
+    order: 0;
+    flex: 0 1 auto;
+    align-self: stretch;
+    background-color: #EDEDEC;
+
+    display: flex;
+    flex-direction: column;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    align-content: center;
+    align-items: center;
+
+
+    }
+
+  #videos p {
+    width: 208px;
+    font-size: 13px;
+    line-height: 18px;
+    color: #666666;
+  }
+
+#iframeContainer {
+    order: 0;
+    flex: 1 1 auto;
+    align-self: stretch;
+
+        display: flex;
+        flex-direction: row;
+        align-items: stretch;
+    }
+
+button {
+  background: #FFFFFF;
+  box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.25);
+  border-radius: 6px;
+  width: 208px;
+  height: 39px;
+  order: 0;
+  flex: 0 0 auto;
+  align-self: center;
+
+  /* English Content Body */
+  font-family: Roboto;
+  font-style: normal;
+  font-weight: normal;
+  font-size: 16px;
+  line-height: 19px;
+
+  color: #666666;
+  margin: 9px 0px;
+
 }
