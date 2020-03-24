@@ -22,6 +22,10 @@ iframe {
 
 }
 
+a {
+  color: #666666;
+}
+
 .flippedVideo {
   transform: rotateY(180deg);
 }
@@ -79,7 +83,6 @@ button {
   flex: 0 0 auto;
   align-self: center;
 
-  /* English Content Body */
   font-family: Roboto;
   font-style: normal;
   font-weight: normal;
@@ -87,6 +90,7 @@ button {
   line-height: 19px;
 
   color: #666666;
+
   margin: 9px 0px;
 
 }
