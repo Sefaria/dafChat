@@ -34,8 +34,18 @@ var clientRoom;
 
 const socket = io.connect();
 
-socket.emit('create or join');
-console.log('Attempted to create or join room');
+
+
+
+  var r = confirm("You need to login first!");
+  if (r == true) {
+      socket.emit('authenticate');
+  } else {
+    console.log('do nothing')
+  }
+
+
+
 
 socket.on('created', function(room) {
   console.log('Created room ' + room);
@@ -62,6 +72,34 @@ socket.on('joined', function(room) {
 socket.on('log', function(array) {
   console.log.apply(console, array);
 });
+
+
+socket.on('authenticate', function(authentication) {
+  if (authentication) {
+
+  socket.emit('create or join');
+  console.log('Attempted to create or join room');
+
+  navigator.mediaDevices.getUserMedia({
+      audio: true,
+      video: true
+    })
+    .then(gotStream)
+    .catch(function(e) {
+      alert('getUserMedia() error: ' + e.name);
+    });
+
+    addAdditionalHTML();
+  }
+
+  else {
+    alert('wrong login')
+  }
+
+
+});
+
+
 
 ////////////////////////////////////////////////
 
@@ -96,17 +134,10 @@ socket.on('message', function(message) {
 
 ////////////////////////////////////////////////////
 
+
 const localVideo = document.querySelector('#localVideo');
 const remoteVideo = document.querySelector('#remoteVideo');
 
-navigator.mediaDevices.getUserMedia({
-    audio: true,
-    video: true
-  })
-  .then(gotStream)
-  .catch(function(e) {
-    alert('getUserMedia() error: ' + e.name);
-  });
 
 function addAdditionalHTML() {
   const newRoomButton = document.createElement('div');
@@ -281,3 +312,5 @@ function newRoom() {
   socket.emit('create or join');
   console.log('Attempted to create new room');
 }
+
+////////////////////////////////////////////

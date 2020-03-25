@@ -1,6 +1,8 @@
 'use strict';
 
 var socketIO = require('socket.io');
+const fetch = require('node-fetch');
+const jwt_decode = require('jwt-decode');
 const sqlite3 = require('sqlite3').verbose();
 const db = new sqlite3.Database('./db/chatrooms.db');
 db.run(`DELETE FROM chatrooms WHERE 1==1`)
@@ -14,10 +16,44 @@ var PORT = process.env.PORT || 8080;
 var fileServer = new(nodeStatic.Server)();
 var app = http.createServer(function(req, res) {
     fileServer.serve(req, res);
+    // console.log(req.headers)
 }).listen(PORT);
 
 var io = socketIO.listen(app);
 io.sockets.on('connection', function(socket) {
+
+  socket.on('authenticate', async function(auth) {
+    const authData = {
+      username: 'USER',
+      password: 'PW',
+    };
+
+    const parsedRes = await (login(authData)).then(res => res.json());
+
+    if (!parsedRes.access) {
+      socket.emit('authenticate', false)
+
+    } else {
+      // await storeAuthToken(parsedRes);
+      socket.emit('authenticate', parsedRes)
+
+    }
+
+
+  });
+
+  function login(authData) {
+
+  const url = 'https://www.sefaria.org/api/login/';
+  return fetch(url, {
+    method: "POST",
+    body: JSON.stringify(authData),
+    headers: {
+      "Content-Type": "application/json;charset=UTF-8"
+    }
+  })
+  }
+
 
   // convenience function to log server messages on the client
   function log() {
