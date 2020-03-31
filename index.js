@@ -26,12 +26,6 @@ io.sockets.on('connection', function(socket) {
     socket.emit('log', array);
   }
 
-
-  function getUsersInRoom(room) {
-    var clientsInRoom = io.sockets.adapter.rooms[room];
-    return clientsInRoom ? Object.keys(clientsInRoom.sockets).length : 0;
-  }
-
   socket.on('message', function(message) {
     log('Client said: ', message);
     var roomId = (Object.keys(socket.rooms).filter(item => item!=socket.id))[0]
@@ -51,12 +45,29 @@ io.sockets.on('connection', function(socket) {
     });
   }
 
+  socket.on('how many rooms', function() {
+
+    db.get(`SELECT COUNT(*) FROM chatrooms`, (err, rows) => {
+      if (err) {
+        return console.error(err.message);
+      }
+
+      const numRows = rows["COUNT(*)"]
+      socket.broadcast.emit('return rooms', numRows);
+      socket.emit('route new user', numRows);
+
+    });
+
+
+  });
+
+
   socket.on('new room', function() {
     console.log(`${socket.id} searching for a room`)
     createNewRoom();
   });
 
-  socket.on('create or join', function() {
+  socket.on('create or join', function(joinOverride=false) {
 
     console.log(`${socket.id} searching for a room`)
     // log('Received request to create or join room ' + room);
@@ -64,7 +75,7 @@ io.sockets.on('connection', function(socket) {
         if (err) {
           return console.error(err.message);
         }
-        if (rows.length >= 2)  {
+        if (rows.length >= 2 || (joinOverride == true && rows.length > 0))  {
           var row = rows[0];
           var room = row.name;
           log('Client ID ' + socket.id + ' joined room ' + room);
@@ -81,23 +92,6 @@ io.sockets.on('connection', function(socket) {
         }
       });
 
-
-    //
-    //
-    // if (numClients === 0) {
-    //   socket.join(room);
-    //   log('Client ID ' + socket.id + ' created room ' + room);
-    //   socket.emit('created', room, socket.id);
-    //
-    // } else if (numClients === 1) {
-    //   log('Client ID ' + socket.id + ' joined room ' + room);
-    //   io.sockets.in(room).emit('join', room);
-    //   socket.join(room);
-    //   socket.emit('joined', room, socket.id);
-    //   io.sockets.in(room).emit('ready');
-    // } else { // max two clients
-    //   socket.emit('full', room);
-    // }
   });
 
   socket.on('ipaddr', function() {
